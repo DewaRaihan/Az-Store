@@ -1,0 +1,323 @@
+<div class="bg-gray-50 min-h-screen p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header dengan Breadcrumb -->
+        <div class="mb-6">
+            <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+                <a href="{{ route('hps.index') }}" class="hover:text-blue-600">
+                    <i class="fas fa-home"></i>
+                </a>
+                <span>/</span>
+                <a href="{{ route('hps.index') }}" class="hover:text-blue-600">HP Inventory</a>
+                <span>/</span>
+                <span class="text-blue-600 font-medium">Detail HP</span>
+            </nav>
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Detail HP</h1>
+                    <p class="text-gray-600">{{ $hp->type_hp }} {{ $hp->detail->storage ?? '' }} {{ $hp->detail->color ?? '' }}</p>
+                </div>
+                <button wire:click="goBack"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2 transition-colors duration-200">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <!-- Header dengan Status -->
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">
+                                {{ $hp->detail->brand ?? 'Brand' }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusColor }}">
+                                <i class="fas {{ $statusIcon }} mr-1"></i> {{ ucfirst($hp->status) }}
+                            </span>
+                            <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm">
+                                Grade {{ $hp->grade ?? 'A' }}
+                            </span>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">{{ $hp->type_hp }}</h2>
+                    </div>
+                    
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-gray-800">{{ $formattedPrice }}</p>
+                        <p class="text-sm text-gray-500">Harga Katalog</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Galeri Foto -->
+            <div class="p-6 border-b border-gray-100">
+                <h3 class="text-sm font-medium text-gray-500 mb-4">GALERI FOTO</h3>
+                
+                <!-- Foto Utama -->
+                <div class="mb-4">
+                    <div class="bg-gray-50 rounded-lg overflow-hidden">
+                        <img id="mainImage" 
+                             src="{{ $mainImageUrl }}" 
+                             alt="{{ $hp->type_hp }} - Main Photo"
+                             class="w-full h-[250px] object-cover">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 text-center">Foto Utama</p>
+                </div>
+                
+                <!-- Foto Tambahan -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-sm font-medium text-gray-600">Foto Tambahan</h4>
+                        <span class="text-xs text-gray-500">{{ $images->count() }} foto tersedia</span>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                        @foreach($images as $index => $image)
+                            <div class="relative">
+                                <img src="{{ Storage::url($image->path) }}"
+                                     alt="Foto {{ $index + 1 }}"
+                                     class="w-full h-[60px] object-cover rounded-md cursor-pointer transition-all duration-300 border-2 {{ $index === $selectedImageIndex ? 'border-blue-600 border-[3px]' : 'border-transparent hover:border-blue-600 hover:scale-105' }}"
+                                     wire:click="changeMainImage({{ $index }})">
+                                <span class="absolute top-1 left-1 bg-blue-600 text-white text-xs px-1 rounded">{{ $index + 1 }}</span>
+                            </div>
+                        @endforeach
+                        
+                        @for($i = $images->count(); $i < 6; $i++)
+                            <div class="relative">
+                                <div class="w-full h-[60px] bg-gray-100 rounded-md flex items-center justify-center">
+                                    <i class="fas fa-image text-gray-400"></i>
+                                </div>
+                                <span class="absolute top-1 left-1 bg-gray-400 text-white text-xs px-1 rounded">{{ $i + 1 }}</span>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+
+            <!-- Konten Detail -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Kolom Kiri: Identitas & Kondisi -->
+                    <div class="space-y-6">
+                        <!-- Identitas Unit -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">IDENTITAS UNIT</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Brand</p>
+                                    <p class="font-medium">{{ $hp->detail->brand ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Storage</p>
+                                    <p class="font-medium">{{ $hp->detail->storage ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Warna</p>
+                                    <p class="font-medium">{{ $hp->detail->color ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Kode HP</p>
+                                    <p class="font-medium text-sm">{{ $hp->code_hp ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Konfigurasi & Status -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">KONFIGURASI</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Network</p>
+                                    <p class="font-medium">{{ $hp->detail->network ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Garansi</p>
+                                    <p class="font-medium">{{ $hp->detail->warranty ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kondisi Fisik -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">KONDISI FISIK</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Display</p>
+                                    <p class="font-medium {{ $displayColor }}">{{ $hp->detail->display ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Body</p>
+                                    <p class="font-medium {{ $bodyColor }}">{{ $hp->detail->body ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom Kanan: Fitur & Lainnya -->
+                    <div class="space-y-6">
+                        <!-- Kondisi Baterai -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">BATERAI</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Kondisi</p>
+                                    <p class="font-medium {{ $batteryConditionColor }}">{{ $hp->detail->battery ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Kesehatan</p>
+                                    <p class="font-medium {{ $batteryHealthColor }}">{{ $hp->detail->battery_health ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fitur Utama -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">FITUR UTAMA</h3>
+                            <div class="grid grid-cols-3 gap-3">
+                                @if($hp->detail)
+                                    @if($hp->detail->face_id !== null)
+                                    <div class="{{ $faceIdColor }} p-3 rounded-lg border">
+                                        <p class="text-xs text-gray-500">Face ID</p>
+                                        <p class="font-medium {{ $faceIdTextColor }}">
+                                            {{ $hp->detail->face_id ? '✓' : '✗' }}
+                                        </p>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($hp->detail->true_tone !== null)
+                                    <div class="{{ $trueToneColor }} p-3 rounded-lg border">
+                                        <p class="text-xs text-gray-500">True Tone</p>
+                                        <p class="font-medium {{ $trueToneTextColor }}">
+                                            {{ $hp->detail->true_tone ? '✓' : '✗' }}
+                                        </p>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($hp->detail->finger_print !== null)
+                                    <div class="{{ $fingerPrintColor }} p-3 rounded-lg border">
+                                        <p class="text-xs text-gray-500">Fingerprint</p>
+                                        <p class="font-medium {{ $fingerPrintTextColor }}">
+                                            {{ $hp->detail->finger_print ? '✓' : '✗' }}
+                                        </p>
+                                    </div>
+                                    @endif
+                                @else
+                                    <!-- Placeholder jika tidak ada detail -->
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p class="text-xs text-gray-500">Face ID</p>
+                                        <p class="font-medium text-gray-600">N/A</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p class="text-xs text-gray-500">True Tone</p>
+                                        <p class="font-medium text-gray-600">N/A</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p class="text-xs text-gray-500">Fingerprint</p>
+                                        <p class="font-medium text-gray-600">N/A</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Kamera -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">KAMERA</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Depan</p>
+                                    <p class="font-medium">{{ $hp->detail->front_camera ?? 'N/A' }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p class="text-xs text-gray-500">Belakang</p>
+                                    <p class="font-medium">{{ $hp->detail->rear_camera ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informasi Lain -->
+                        @if($hp->detail && $hp->detail->other)
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-3">INFORMASI LAIN</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                <div class="space-y-1">
+                                    @foreach(explode("\n", $hp->detail->other) as $note)
+                                        @if(trim($note))
+                                            <p class="text-sm text-gray-700">• {{ trim($note) }}</p>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Informasi Harga -->
+                <div class="mt-6 pt-6 border-t border-gray-100">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <p class="text-xs text-gray-500">Harga Beli</p>
+                            <p class="text-base font-bold text-gray-800">{{ $purchasePrice }}</p>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <p class="text-xs text-gray-500">Harga Jual</p>
+                            <p class="text-base font-bold text-gray-800">{{ $formattedPrice }}</p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg border border-green-100">
+                            <p class="text-xs text-gray-500">Estimasi Profit</p>
+                            <p class="text-base font-bold text-green-700">{{ $profit }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-6 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+                <div class="flex flex-col sm:flex-row justify-center sm:justify-end gap-3">
+                    <button wire:click="goBack"
+                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 transition-colors duration-200">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </button>
+                    
+                    @if($hp->status !== 'sold')
+                        <button wire:click="markAsSold"
+                                wire:loading.attr="disabled"
+                                class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 transition-colors duration-200 disabled:opacity-50">
+                            <i class="fas fa-shopping-cart"></i> 
+                            <span wire:loading.remove wire:target="markAsSold">Tandai Terjual</span>
+                            <span wire:loading wire:target="markAsSold">Processing...</span>
+                        </button>
+                    @else
+                        <button wire:click="toggleSoldStatus"
+                                wire:loading.attr="disabled"
+                                class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 transition-colors duration-200">
+                            <i class="fas fa-undo"></i> Kembalikan ke Stok
+                        </button>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Informasi Metadata -->
+        <div class="mt-4 text-center text-xs text-gray-500">
+            <p>
+                Created: {{ $hp->created_at->format('d M Y') }} • 
+                Last Updated: {{ $hp->updated_at->diffForHumans() }} • 
+                Stock ID: {{ $hp->code_hp ?? 'N/A' }}
+            </p>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    // Script untuk mengubah gambar utama dengan Alpine.js
+    document.addEventListener('livewire:load', function() {
+        Livewire.on('imageChanged', function() {
+            // Efek transisi bisa ditambahkan di sini
+            console.log('Image changed');
+        });
+    });
+</script>
+@endpush
